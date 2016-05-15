@@ -1,46 +1,37 @@
-local alert = require 'hs.alert'
+-- this needs brew install choose-gui
 
-import = require('utils/import')
-import.clear_cache()
+function map(func, array)
+  local new_array = {}
+  for i,v in ipairs(array) do
+    new_array[i] = func(v)
+  end
+  return new_array
+end
 
-config = import('config')
-
-function config:get(key_path, default)
-    local root = self
-    for part in string.gmatch(key_path, "[^\\.]+") do
-        root = root[part]
-        if root == nil then
-            return default
-        end
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "space", function()
+  filter = hs.window.filter.new(nil)
+  windows = filter:getWindows()
+  titleString = ""
+  ids = {}
+  currentIx = -1
+  for i, window in ipairs(windows) do
+    title = window:title()
+    if not (title == "") then
+      currentIx = currentIx + 1
+      ids[currentIx] = window:id()
+      titleString = titleString .. title .. "\n"
     end
-    return root
-end
-
-local modules = {}
-
-for _, v in ipairs(config.modules) do
-    local module_name = 'modules/' .. v
-    local module = import(module_name)
-
-    if type(module.init) == "function" then
-        module.init()
-    end
-
-    table.insert(modules, module)
-end
-
-local buf = {}
-
-if hs.wasLoaded == nil then
-    hs.wasLoaded = true
-    table.insert(buf, "Hammerspoon loaded: ")
-else
-    table.insert(buf, "Hammerspoon re-loaded: ")
-end
-
-table.insert(buf, #modules .. " modules.")
-
-alert.show(table.concat(buf))
-
-
-
+  end
+  file = io.open("/tmp/window-list.txt", "w")
+  file:write(titleString)
+  file:close()
+  proc = io.popen("/usr/local/bin/choose -i </tmp/window-list.txt", "r")
+  choice = proc:read()
+  proc:close()
+  ix = tonumber(choice)
+  if ix >= 0 then
+    id = ids[ix]
+    window = hs.window.get(id)
+    window:focus()
+  end
+end)
