@@ -22,9 +22,12 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "space", function()
   for i, window in ipairs(windows) do
     title = window:title()
     if not (title == "") then
+      app = window:application()
+      appName = app:name()
+      fullTitle = appName .. " - " .. title
       currentIx = currentIx + 1
       ids[currentIx] = window:id()
-      titleString = titleString .. title .. "\n"
+      titleString = titleString .. fullTitle .. "\n"
     end
   end
   file = io.open("/tmp/window-list.txt", "w")
