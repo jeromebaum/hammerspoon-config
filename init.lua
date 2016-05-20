@@ -41,5 +41,6 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "space", function()
     id = ids[ix]
     window = hs.window.get(id)
     window:focus()
+    window:focus()
   end
 end)
